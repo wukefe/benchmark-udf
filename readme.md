@@ -17,7 +17,7 @@ Source: http://wiki.cs.princeton.edu/index.php/PARSEC
 
 ### Table Setup
 
-Schema is defined in [udf.ddl#blackscholes](udf.md#L1) as follows.
+Schema is defined in [udf.ddl#blackscholes](udf.ddl#L1) as follows.
 
 ```sql
 CREATE TABLE BLACKSCHOLES ( SPTPRICE   DECIMAL(15,6) NOT NULL,  -- spot price
