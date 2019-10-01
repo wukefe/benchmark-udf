@@ -7,21 +7,35 @@ List of Functions
 
 ## Black-scholes
 
+> This application is an Intel RMS benchmark. It calculates the prices for a
+> portfolio of European options analytically with the Black-Scholes partial
+> differential equation (PDE). There is no closed-form expression for the
+> Black-Scholes equation and as such it must be computed numerically.
+
+Source: http://wiki.cs.princeton.edu/index.php/PARSEC
+
+
 ### Table Setup
 
 Schema is defined in [udf.ddl#blackscholes](udf.md#L1) as follows.
 
 ```sql
-CREATE TABLE BLACKSCHOLES ( SPTPRICE   DECIMAL(15,6) NOT NULL,
-                            STRIKE     DECIMAL(15,6) NOT NULL,
-                            RATE       DECIMAL(15,6) NOT NULL,
-                            DIVQ       DECIMAL(15,6) NOT NULL,
-                            VOLATILITY DECIMAL(15,6) NOT NULL,
-                            TIME       DECIMAL(15,6) NOT NULL,
-                            OPTIONTYPE CHAR(1)       NOT NULL,
-                            DIVS       DECIMAL(15,6) NOT NULL,
-                            DGREFVAL   DECIMAL(15,6) NOT NULL);
+CREATE TABLE BLACKSCHOLES ( SPTPRICE   DECIMAL(15,6) NOT NULL,  -- spot price
+                            STRIKE     DECIMAL(15,6) NOT NULL,  -- strike price
+                            RATE       DECIMAL(15,6) NOT NULL,  -- risk-free interest rate
+                            DIVQ       DECIMAL(15,6) NOT NULL,  -- dividend rate
+                            VOLATILITY DECIMAL(15,6) NOT NULL,  -- volatility
+                            TIME       DECIMAL(15,6) NOT NULL,  -- time to maturity or option expiration in years
+                            OPTIONTYPE CHAR(1)       NOT NULL,  -- option type: "P"=PUT, "C"=CALL
+                            DIVS       DECIMAL(15,6) NOT NULL,  -- dividend values
+                            DGREFVAL   DECIMAL(15,6) NOT NULL); -- DerivaGem Reference Value
 ```
+
+External links
+
+- [The black-scholes benchmark used in Intel](https://software.intel.com/en-us/articles/multithreaded-code-optimization-in-parsec-30-blackscholes)
+    + You can find the formula for calcucations.
+
 
 A sample data file can be found in [here](data/in_1M.tar.gz).
 
@@ -56,9 +70,8 @@ LANGUAGE PYTHON_MAP {
 
 ***Note:***
 
-- The Python function `BlkSchls` is defined and saved in a script file named `myudf`.
+- The Python function `BlkSchls` is defined and saved in [bs/bs.py](bs/bs.py)
 - This is a table UDF which returns a table with three columns
-
 
 ### SQL Queries
 
