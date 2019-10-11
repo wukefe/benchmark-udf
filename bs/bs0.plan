@@ -1,0 +1,44 @@
+#PLAN
+#WITH optionpricing(sptprice, strike, rate, volatility, time, optiontype, optionprice, numoptions)
+#	AS
+#	(
+#	 SELECT sptprice, strike, rate, volatility, time, optiontype, optionprice, COUNT(*) numoptions
+#	 FROM myudf ((SELECT * FROM blackscholes))
+#	 GROUP BY sptprice, strike, rate, volatility, time, optiontype, optionprice
+#	)
+#	SELECT b.sptprice, b.strike, b.rate, b.divq, b.volatility, b.time,
+#		   b.optiontype, b.divs, b.dgrefval, op.optionprice, op.numoptions,
+#		   mx_s_o.max_spt_optionprice
+#	FROM blackscholes  AS b, optionpricing op,
+% .plan # table_name
+% rel # name
+% clob # type
+% 502 # length
+REF 1 (2)
+project (
+| group by (
+| | table sys.myudf(double["blackscholes"."sptprice" NOT NULL], double["blackscholes"."strike" NOT NULL], double["blackscholes"."rate" NOT NULL], double["blackscholes"."divq" NOT NULL], double["blackscholes"."volatility" NOT NULL], double["blackscholes"."time" NOT NULL], "blackscholes"."optiontype" NOT NULL, double["blackscholes"."divs" NOT NULL], double["blackscholes"."dgrefval" NOT NULL]), 
+| | | project (
+| | | | table(sys.blackscholes) [ "blackscholes"."sptprice" NOT NULL, "blackscholes"."strike" NOT NULL, "blackscholes"."rate" NOT NULL, "blackscholes"."divq" NOT NULL, "blackscholes"."volatility" NOT NULL, "blackscholes"."time" NOT NULL, "blackscholes"."optiontype" NOT NULL, "blackscholes"."divs" NOT NULL, "blackscholes"."dgrefval" NOT NULL ] COUNT 
+| | | ) [ "blackscholes"."sptprice" NOT NULL, "blackscholes"."strike" NOT NULL, "blackscholes"."rate" NOT NULL, "blackscholes"."divq" NOT NULL, "blackscholes"."volatility" NOT NULL, "blackscholes"."time" NOT NULL, "blackscholes"."optiontype" NOT NULL, "blackscholes"."divs" NOT NULL, "blackscholes"."dgrefval" NOT NULL ] [ "L3"."sptprice", "L3"."strike", "L3"."rate", "L3"."divq", "L3"."volatility", "L3"."time", "L3"."optiontype", "L3"."divs", "L3"."dgrefval", "L3"."optionprice" ] COUNT 
+| ) [ "L3"."optiontype", "L3"."sptprice", "L3"."strike", "L3"."rate", "L3"."volatility", "L3"."time", "L3"."optionprice" ] [ "L3"."sptprice", "L3"."strike", "L3"."rate", "L3"."volatility", "L3"."time", "L3"."optiontype", "L3"."optionprice", sys.count() NOT NULL as "L14"."L14" ]
+) [ "L3"."sptprice" as "optionpricing"."sptprice", "L3"."strike" as "optionpricing"."strike", "L3"."rate" as "optionpricing"."rate", "L3"."volatility" as "optionpricing"."volatility", "L3"."time" as "optionpricing"."time", "L3"."optiontype" as "optionpricing"."optiontype", "L3"."optionprice" as "optionpricing"."optionprice", "L14"."L14" NOT NULL as "optionpricing"."numoptions" ]
+top N (
+| project (
+| | join (
+| | | project (
+| | | | join (
+| | | | | table(sys.blackscholes) [ "blackscholes"."sptprice" NOT NULL as "b"."sptprice", "blackscholes"."strike" NOT NULL as "b"."strike", "blackscholes"."rate" NOT NULL as "b"."rate", "blackscholes"."divq" NOT NULL as "b"."divq", "blackscholes"."volatility" NOT NULL as "b"."volatility", "blackscholes"."time" NOT NULL as "b"."time", "blackscholes"."optiontype" NOT NULL as "b"."optiontype", "blackscholes"."divs" NOT NULL as "b"."divs", "blackscholes"."dgrefval" NOT NULL as "b"."dgrefval" ] COUNT ,
+| | | | | & REF 1  
+| | | | ) [ double(53,6)["b"."sptprice" NOT NULL] = "optionpricing"."sptprice", double(53,6)["b"."strike" NOT NULL] = "optionpricing"."strike", double(53,6)["b"."rate" NOT NULL] = "optionpricing"."rate", double(53,6)["b"."volatility" NOT NULL] = "optionpricing"."volatility", double(53,6)["b"."time" NOT NULL] = "optionpricing"."time", "b"."optiontype" NOT NULL = "optionpricing"."optiontype", double(53,6)["b"."sptprice" NOT NULL] = "optionpricing"."sptprice" ]
+| | | ) [ "b"."sptprice" NOT NULL, "b"."strike" NOT NULL, "b"."rate" NOT NULL, "b"."divq" NOT NULL, "b"."volatility" NOT NULL, "b"."time" NOT NULL, "b"."optiontype" NOT NULL, "b"."divs" NOT NULL, "b"."dgrefval" NOT NULL, "optionpricing"."optionprice" as "op"."optionprice", "optionpricing"."numoptions" NOT NULL as "op"."numoptions", double(53,6)["b"."sptprice" NOT NULL] as "L53"."L53", "op"."optionprice" as "L55"."L55" ],
+| | | project (
+| | | | group by (
+| | | | | project (
+| | | | | | & REF 1 
+| | | | | ) [ "optionpricing"."sptprice", "optionpricing"."optionprice" ]
+| | | | ) [ "optionpricing"."sptprice" ] [ "optionpricing"."sptprice", sys.max no nil ("optionpricing"."optionprice") as "L23"."L23" ]
+| | | ) [ "optionpricing"."sptprice" as "mx_s_o"."sptprice", "L23"."L23" as "mx_s_o"."max_spt_optionprice", "mx_s_o"."sptprice" as "L54"."L54", sys.sql_mul(double(53,2) "0.9", "mx_s_o"."max_spt_optionprice") as "L56"."L56" ]
+| | ) [ "L53"."L53" = "L54"."L54", "L55"."L55" >= "L56"."L56" ]
+| ) [ "b"."sptprice" NOT NULL, "b"."strike" NOT NULL, "b"."rate" NOT NULL, "b"."divq" NOT NULL, "b"."volatility" NOT NULL, "b"."time" NOT NULL, "b"."optiontype" NOT NULL, "b"."divs" NOT NULL, "b"."dgrefval" NOT NULL, "op"."optionprice", "op"."numoptions" NOT NULL, "mx_s_o"."max_spt_optionprice" ]
+) [ bigint "10" ]

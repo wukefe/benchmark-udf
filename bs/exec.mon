@@ -1,0 +1,24 @@
+DROP FUNCTION myudf;
+CREATE FUNCTION myudf(sptprice FLOAT, strike FLOAT, rate FLOAT, divq FLOAT, volatility FLOAT, time FLOAT, optiontype CHAR, divs FLOAT, dgrefval FLOAT)
+RETURNS TABLE(sptprice FLOAT, strike FLOAT, rate FLOAT, divq FLOAT, volatility FLOAT, time FLOAT, optiontype CHAR, divs FLOAT, dgrefval FLOAT, optionprice FLOAT)
+LANGUAGE PYTHON_MAP {
+    import bs
+    # computing
+    optionPrice = bs.BlkSchls(0, sptprice, strike, rate, volatility, time, optiontype)
+    # return result
+    result = dict()
+    result['sptprice']    = sptprice
+    result['strike']      = strike
+    result['rate']        = rate
+    result['divq']        = divq
+    result['volatility']  = volatility
+    result['time']        = time
+    result['optiontype']  = optiontype
+    result['divs']        = divs
+    result['dgrefval']    = dgrefval
+    result['optionprice'] = optionPrice
+    return result
+};
+
+#plan SELECT * FROM myudf((SELECT * FROM blackscholes));
+
